@@ -25,14 +25,14 @@ def test_custom_multi_character_delimiter():
     assert calculator.add("//[***]\n1***2***3") == 6
 
 def test_negative_numbers_throw_exception():
-    with pytest.raises(ValueError) as exc:
+    with pytest.raises(ValueError) as excinfo:
         calculator.add("1,-2,3")
-    assert str(exc.value) == "negatives not allowed: -2"
+    assert "negatives not allowed: -2" == str(excinfo.value)
 
 def test_multiple_negative_numbers_throw_exception():
-    with pytest.raises(ValueError) as exc:
+    with pytest.raises(ValueError) as excinfo:
         calculator.add("1,-2,-3")
-    assert str(exc.value) == "negatives not allowed: -2, -3"
+    assert "negatives not allowed: -2, -3" == str(excinfo.value)
 
 def test_numbers_greater_than_1000_are_ignored():
     assert calculator.add("2,1001") == 2
