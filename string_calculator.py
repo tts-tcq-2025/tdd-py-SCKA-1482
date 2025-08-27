@@ -1,35 +1,41 @@
 import re
 
 class StringCalculator:
+
     def add(self, numbers: str) -> int:
-        delimiter, numbers_part = self._extract_delimiter(numbers)
-        number_list = self._split_numbers(numbers_part, delimiter)
-        self._check_negatives(number_list)
-        filtered_numbers = self._filter_large_numbers(number_list)
-        return sum(filtered_numbers)
+        delimiters, nums = self._extract_delimiter(numbers)
+        numbers_list = self._split_numbers(nums, delimiters)
+        self._validate_negatives(numbers_list)
+        numbers_filtered = self._filter_large_numbers(numbers_list)
+        return sum(numbers_filtered)
 
     def _extract_delimiter(self, numbers: str):
-        default_delimiters = [',', '\n']
         if numbers.startswith("//"):
-            delimiter_part, numbers_part = numbers[2:].split('\n', 1)
-            if delimiter_part.startswith("[") and delimiter_part.endswith("]"):
-                delimiter = delimiter_part[1:-1]
-            else:
-                delimiter = delimiter_part
-            return [delimiter], numbers_part
-        else:
-            return default_delimiters, numbers
+            delimiter_line, rest = numbers[2:].split('\n', 1)
+            delimiters = self._parse_delimiter_line(delimiter_line)
+            return delimiters, rest
+        return [",", "\n"], numbers
 
-    def _split_numbers(self, numbers_part: str, delimiters: list[str]):
-        delimiters_pattern = '|'.join(re.escape(d) for d in delimiters)
-        tokens = re.split(delimiters_pattern, numbers_part)
-        return [int(token) for token in tokens if token != '']
+    def _parse_delimiter_line(self, delimiter_line: str):
+        if delimiter_line.startswith("[") and delimiter_line.endswith("]"):
+            return [delimiter_line[1:-1]]
+        return [delimiter_line]
 
-    def _check_negatives(self, numbers: list[int]):
-        negatives = [n for n in numbers if n < 0]
+    def _split_numbers(self, numbers: str, delimiters: list[str]) -> list[int]:
+        pattern = '|'.join(map(re.escape, delimiters))
+        tokens = re.split(pattern, numbers)
+        return [int(t) for t in tokens if t]
+
+    def _validate_negatives(self, numbers: list[int]):
+        negatives = self._find_negatives(numbers)
+        self._raise_if_negatives(negatives)
+
+    def _find_negatives(self, numbers: list[int]) -> list[int]:
+        return [n for n in numbers if n < 0]
+
+    def _raise_if_negatives(self, negatives: list[int]):
         if negatives:
-            negatives_str = ", ".join(str(n) for n in negatives)
-            raise ValueError(f"negatives not allowed: {negatives_str}")
+            raise ValueError("negatives not allowed: " + ", ".join(map(str, negatives)))
 
     def _filter_large_numbers(self, numbers: list[int]) -> list[int]:
         return [n for n in numbers if n <= 1000]
